@@ -6,8 +6,6 @@
  */
 module dstep.translator.objc.ObjcInterface;
 
-import std.exception;
-
 import mambo.core._;
 
 import clang.c.index;
@@ -65,15 +63,15 @@ private:
 		output.currentClass = new Data;
 		output.currentClass.name = translateIdentifier(name);
 		output.currentClass.interfaces = interfaces;
-		
+
 		if (superClassName.isPresent)
 			output.currentClass.superclass ~= translateIdentifier(superClassName);
-		
+
 		dg();
-		
+
 		return output.currentClass.data;
 	}
-	
+
 	void translateMethod (FunctionCursor func, bool classMethod = false, string name = null)
 	{
 		auto method = output.newContext();
@@ -97,7 +95,7 @@ private:
 		else
 		{
 			name = translateIdentifier(name);
-			translateFunction(func, name, method, classMethod);
+			translator.function_(func, name, method, classMethod);
 
 			method ~= " [";
 			method ~= func.spelling;
@@ -110,18 +108,18 @@ private:
 				cls.instanceMethods ~= method.data;
 		}
 	}
-	
+
 	void translateProperty (Cursor cursor)
 	{
 		auto context = output.newContext();
 		auto cls = output.currentClass;
 		auto name = cls.getMethodName(cursor.func, "", false);
-		
+
 		translateGetter(cursor.type, context, name, cls, false);
 		context = output.newContext();
 		translateSetter(cursor.type, context, name, cls, false);
 	}
-	
+
 	void translateInstanceVariable (Cursor cursor)
 	{
 		auto var = output.newContext();
@@ -196,6 +194,7 @@ private:
 		name = name[3 .. $];
 		auto firstLetter = name[0 .. 1];
 		auto r = firstLetter.toLower ~ name[1 .. $];
+
 		return r.assumeUnique;
 	}
 
